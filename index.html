@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>wani Search-Log Visualization — NALOMA 2026 Demo</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --fg: #1a202c;
+    --muted: #4a5568;
+    --accent: #3182ce;
+    --accent-dark: #2c5282;
+    --border: #e2e8f0;
+    --success: #38a169;
+    --fail: #e53e3e;
+    --depth: #dd6b20;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(135deg, #2c5282 0%, #2a4365 100%);
+    color: #fff;
+    padding: 56px 24px 48px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0 0 12px;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  header .subtitle {
+    margin: 0 auto;
+    max-width: 760px;
+    font-size: 1.05rem;
+    opacity: 0.92;
+  }
+  header .badge {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    font-size: 0.82rem;
+    opacity: 0.9;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+  section { margin-bottom: 56px; }
+  section h2 {
+    font-size: 1.5rem;
+    margin: 0 0 16px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+  }
+  p { margin: 0 0 12px; }
+  .lead {
+    font-size: 1.05rem;
+    color: var(--muted);
+  }
+
+  /* PSQ display card */
+  .psq-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+  }
+  .psq-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .psq-id {
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.82rem;
+  }
+  .psq-tag {
+    border: 1px solid var(--border);
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+  }
+  .psq-row {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 4px 0;
+  }
+  .psq-label {
+    flex: 0 0 100px;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  .psq-text {
+    font-size: 1.05rem;
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .psq-gloss {
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .psq-figure {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .psq-figcaption {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .psq-figure img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    background: #fff;
+  }
+
+  /* Demo embed */
+  .demo-wrap {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .demo-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f1f5f9;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .demo-bar .url-pill {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 2px 10px;
+    border-radius: 12px;
+  }
+  .demo-bar a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .demo-bar a:hover { text-decoration: underline; }
+  .demo-frame {
+    width: 100%;
+    height: 720px;
+    border: 0;
+    background: #fff;
+  }
+
+  /* Feature grid */
+  .panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .panel-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .panel-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+  }
+  .panel-card p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Links */
+  .link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .link-card {
+    display: block;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .link-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .link-card .lk-title {
+    font-weight: 600;
+    color: var(--accent-dark);
+    margin-bottom: 2px;
+  }
+  .link-card .lk-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  code {
+    background: #edf2f7;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.92em;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre {
+    background: #1a202c;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Where Does Proof Search Spend Its Time?</h1>
+  <div class="subtitle">
+    A profiling and visualisation tool for proof search in formal NLI,
+    demonstrated on the dependent-type-theory prover <em>wani</em>
+    inside <em>lightblue</em>.
+  </div>
+  <div class="badge">NALOMA VI &middot; ESSLLI 2026 &middot; Archival Demo Paper</div>
+</header>
+
+<main>
+
+  <section>
+    <h2>Live Demo</h2>
+    <p class="lead">
+      The demo runs the actual prover on a pre-loaded
+      <a href="https://github.com/DaisukeBekki/JSeM" target="_blank" rel="noopener">JSeM</a>
+      problem (a Japanese-language semantic-inference test set). The
+      four-panel dashboard below is generated from a real
+      proof-search trace.
+    </p>
+    <div class="psq-card">
+      <div class="psq-head">
+        <span class="psq-id">JSeM&nbsp;720</span>
+        <span class="psq-tag">verb &middot; passive (間接受身)</span>
+        <span class="psq-answer">expected: <strong>yes</strong> (entailment)</span>
+      </div>
+      <div class="psq-row">
+        <span class="psq-label">Premise</span>
+        <span class="psq-text">
+          <span lang="ja">太郎が花子に泣かれた。</span>
+          <span class="psq-gloss">‘Taro was cried on by Hanako.’</span>
+        </span>
+      </div>
+      <div class="psq-row">
+        <span class="psq-label">Hypothesis</span>
+        <span class="psq-text">
+          <span lang="ja">花子が泣いた。</span>
+          <span class="psq-gloss">‘Hanako cried.’</span>
+        </span>
+      </div>
+      <div class="psq-figure">
+        <div class="psq-figcaption">
+          ProofSearchQuery (DTS encoding) &mdash; the formal goal
+          actually handed to <em>wani</em>.
+        </div>
+        <img src="assets/jsem720-psq.png" alt="DTS-encoded ProofSearchQuery for JSeM 720" />
+      </div>
+    </div>
+    <div class="demo-wrap">
+      <div class="demo-bar">
+        <span class="url-pill">https://wani-viz-demo.fly.dev/searchlog</span>
+        <a href="https://wani-viz-demo.fly.dev/searchlog" target="_blank" rel="noopener">
+          Open in new tab &rarr;
+        </a>
+      </div>
+      <iframe
+        class="demo-frame"
+        src="https://wani-viz-demo.fly.dev/searchlog"
+        title="wani Proof Search Visualization"
+        loading="lazy">
+      </iframe>
+    </div>
+    <p style="margin-top:10px;font-size:0.88rem;color:var(--muted)">
+      The first request may take 10&ndash;20 seconds while the
+      container wakes up (idle scale-to-zero).
+    </p>
+  </section>
+
+  <section>
+    <h2>Four Coordinated Views</h2>
+    <p class="lead">
+      Each panel answers a different developer question about the
+      symbolic search.
+    </p>
+    <div class="panels">
+      <div class="panel-card">
+        <h3>Search Tree</h3>
+        <p>
+          <span class="swatch" style="background:var(--success)"></span>success
+          &nbsp;
+          <span class="swatch" style="background:var(--fail)"></span>fail
+          &nbsp;
+          <span class="swatch" style="background:var(--depth)"></span>depth-exceeded
+          <br/>
+          The full goal/subgoal hierarchy. Reveals the
+          <em>structure</em> of exploration.
+        </p>
+      </div>
+      <div class="panel-card">
+        <h3>Flame Graph</h3>
+        <p>
+          Width&nbsp;=&nbsp;wall-clock duration. Shows
+          <em>where</em> time is spent across the proof tree.
+        </p>
+      </div>
+      <div class="panel-card">
+        <h3>Rule Statistics</h3>
+        <p>
+          Per-rule attempts, successes, failures, and average
+          duration. Identifies <em>bottleneck</em> rules.
+        </p>
+      </div>
+      <div class="panel-card">
+        <h3>Failure Analysis</h3>
+        <p>
+          Failures grouped by category
+          (<code>depth_exceeded</code>, <code>loop_avoided</code>,
+          <code>time_limit</code>, <code>deduce_failed</code>) with
+          goal snippets.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Run It Yourself</h2>
+    <p class="lead">
+      A pre-built Docker image bundles the compiled
+      <em>lightblue</em> binary, the KWJA tokeniser models, and the
+      pre-baked JSeM&nbsp;720 proof-search query. No external
+      services or datasets are required at runtime.
+    </p>
+
+    <pre><code># No build needed &mdash; pull and run in one command
+docker run -p 3000:3000 lilkohapizza/wani-viz-demo
+
+# &rarr; open http://localhost:3000/searchlog</code></pre>
+
+    <p style="font-size:0.88rem;color:var(--muted);margin-top:16px;">
+      <strong>What runs at startup (default):</strong> the container
+      loads the pre-baked JSeM&nbsp;720 ProofSearchQuery into
+      Express, starts the Yesod server on port&nbsp;3000, and a
+      visitor of <code>/searchlog</code> sees the four-panel
+      dashboard rendered from a real proof-search trace.
+    </p>
+  </section>
+
+  <section>
+    <h2>Resources</h2>
+    <div class="link-grid">
+      <a class="link-card" href="#" target="_blank" rel="noopener">
+        <div class="lk-title">Paper (PDF)</div>
+        <div class="lk-desc">NALOMA 2026 archival demo submission &mdash; anonymized for double-blind review.</div>
+      </a>
+      <a class="link-card" href="#" target="_blank" rel="noopener">
+        <div class="lk-title">Source code</div>
+        <div class="lk-desc">Anonymous mirror via 4open.science.</div>
+      </a>
+      <a class="link-card" href="https://wani-viz-demo.fly.dev/searchlog" target="_blank" rel="noopener">
+        <div class="lk-title">Live demo</div>
+        <div class="lk-desc">The hosted dashboard above &mdash; full-screen.</div>
+      </a>
+      <a class="link-card" href="#" target="_blank" rel="noopener">
+        <div class="lk-title">Docker image</div>
+        <div class="lk-desc">Pull the pre-built image and run locally.</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Anonymized for double-blind review &middot; NALOMA VI 2026
+</footer>
+
+</body>
+</html>
