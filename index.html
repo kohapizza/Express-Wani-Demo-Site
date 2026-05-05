@@ -347,11 +347,13 @@
   <section>
     <h2>Live Demo</h2>
     <p class="lead">
-      The demo runs the actual prover on a pre-loaded
+      The four-panel dashboard below was generated from a real
+      proof-search run on a pre-loaded
       <a href="https://github.com/DaisukeBekki/JSeM" target="_blank" rel="noopener">JSeM</a>
-      problem (a Japanese-language semantic-inference test set). The
-      four-panel dashboard below is generated from a real
-      proof-search trace.
+      problem (a Japanese-language semantic-inference test set), and is
+      bundled here as a fixed snapshot for reproducibility. The Docker
+      image in <em>Run It Yourself</em> reproduces the live execution
+      end-to-end.
     </p>
     <div class="psq-card">
       <div class="psq-head">
@@ -583,6 +585,14 @@ docker run -p 3000:3000 lilkohapizza/wani-viz-demo
       visitor of <code>/searchlog</code> sees the four-panel
       dashboard rendered from a real proof-search trace.
     </p>
+    <p style="font-size:0.88rem;color:var(--muted);margin-top:8px;">
+      <strong>Cloud version:</strong>
+      <a href="https://wani-viz-demo.fly.dev/searchlog" target="_blank" rel="noopener">https://wani-viz-demo.fly.dev/searchlog</a>
+      hosts the same image on Fly.io. The first request after idle may
+      take 10&ndash;20 seconds (scale-to-zero cold start), and
+      wall-clock timings vary across cold starts &mdash; use the
+      embedded snapshot above for reproducible numbers.
+    </p>
   </section>
 
   <section>
@@ -595,10 +605,6 @@ docker run -p 3000:3000 lilkohapizza/wani-viz-demo
       <a class="link-card" href="https://hub.docker.com/r/lilkohapizza/wani-viz-demo" target="_blank" rel="noopener">
         <div class="lk-title">Docker image</div>
         <div class="lk-desc">Pre-built image on Docker Hub. <code>docker run -p 3000:3000 lilkohapizza/wani-viz-demo</code></div>
-      </a>
-      <a class="link-card" href="https://github.com/kohapizza/lightblue/tree/feature/wani-search-log-viz" target="_blank" rel="noopener">
-        <div class="lk-title">Source code</div>
-        <div class="lk-desc">The visualisation feature lives on the <code>feature/wani-search-log-viz</code> branch of the <em>lightblue</em> fork.</div>
       </a>
     </div>
   </section>
