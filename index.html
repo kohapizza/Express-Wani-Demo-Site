@@ -238,6 +238,29 @@
     font-size: 0.9rem;
     color: var(--muted);
   }
+  .link-card-disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .link-card-disabled:hover {
+    border-color: var(--border);
+    transform: none;
+  }
+  .lk-tbd {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .link-card code {
+    font-size: 0.78rem;
+    word-break: break-all;
+  }
 
   code {
     background: #edf2f7;
@@ -270,6 +293,40 @@
     font-size: 0.85rem;
     padding: 24px;
     border-top: 1px solid var(--border);
+  }
+
+  /* Usage guide */
+  .guide-panel {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+  }
+  .guide-panel h3 {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+  }
+  .guide-panel p { font-size: 0.92rem; }
+  .guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.88rem;
+  }
+  .guide-table th {
+    text-align: left;
+    padding: 5px 12px 5px 0;
+    white-space: nowrap;
+    color: var(--fg);
+    font-weight: 600;
+    vertical-align: top;
+    width: 120px;
+  }
+  .guide-table td {
+    padding: 5px 0;
+    color: var(--muted);
+    vertical-align: top;
   }
 </style>
 </head>
@@ -391,6 +448,116 @@
   </section>
 
   <section>
+    <h2>Usage Guide</h2>
+    <p class="lead">
+      How to read and interact with each panel of the dashboard.
+    </p>
+
+    <div class="guide-panel">
+      <h3>Search Tree</h3>
+      <p>
+        Each node represents one <code>deduce'</code> invocation (one goal).
+        Parent→child edges show the subgoals produced by a rule application.
+      </p>
+      <table class="guide-table">
+        <tr>
+          <th>Node label format</th>
+          <td><code>Rule (i/m #k) [children] duration</code></td>
+        </tr>
+        <tr>
+          <th>Rule</th>
+          <td>The inference rule applied (e.g. <code>ΣI</code>, <code>Var</code>, <code>EFQ</code>)</td>
+        </tr>
+        <tr>
+          <th>i/m</th>
+          <td>AND position — the <em>i</em>-th subgoal out of <em>m</em> produced by the parent rule (all must succeed)</td>
+        </tr>
+        <tr>
+          <th>#k</th>
+          <td>OR index — which alternative branch (any one suffices). Omitted when only one branch exists</td>
+        </tr>
+        <tr>
+          <th>[children]</th>
+          <td>Total number of direct children, including collapsed ones</td>
+        </tr>
+        <tr>
+          <th>duration</th>
+          <td>Wall-clock time for this subtree (in ms)</td>
+        </tr>
+      </table>
+      <p><strong>Colors:</strong>
+        <span class="swatch" style="background:var(--success)"></span>success &nbsp;
+        <span class="swatch" style="background:var(--fail)"></span>failure (all rules exhausted) &nbsp;
+        <span class="swatch" style="background:var(--depth)"></span>depth-bound exhaustion &nbsp;
+        <span class="swatch" style="background:#ecc94b"></span>loop avoidance &nbsp;
+        <span class="swatch" style="background:#a0aec0"></span>time limit
+      </p>
+      <p><strong>Interaction:</strong> Click a node to expand or collapse its subtree. Nodes at depth 4+ are collapsed by default.</p>
+    </div>
+
+    <div class="guide-panel">
+      <h3>Flame Graph</h3>
+      <p>
+        Each cell corresponds to one goal node. The <strong>width</strong> is proportional
+        to the wall-clock time spent in that subtree. The <strong>vertical axis</strong>
+        represents recursion depth (root at the bottom).
+      </p>
+      <p>
+        Wide cells are temporal hotspots — look for them to find where the prover
+        spends most of its effort. Colors follow the same scheme as the Search Tree.
+      </p>
+    </div>
+
+    <div class="guide-panel">
+      <h3>Rule Statistics</h3>
+      <p>
+        A table grouping every search-tree node by the rule that produced it.
+      </p>
+      <table class="guide-table">
+        <tr><th>Att.</th><td>Total number of attempts for this rule</td></tr>
+        <tr><th>Suc.</th><td>Successful discharges</td></tr>
+        <tr><th>Fail</th><td>Failures (all sub-rules exhausted)</td></tr>
+        <tr><th>Dep.</th><td>Terminated by depth bound</td></tr>
+        <tr><th>Loop</th><td>Terminated by loop avoidance</td></tr>
+        <tr><th>Time</th><td>Terminated by time limit</td></tr>
+        <tr><th>Pend.</th><td>Still pending (incomplete search)</td></tr>
+        <tr><th>Rate</th><td>Success rate (Suc. / Att.)</td></tr>
+        <tr><th>Tot. ms</th><td>Total wall-clock time spent on this rule</td></tr>
+      </table>
+      <p><strong>Interaction:</strong> Click any column header to sort the table by that column.</p>
+    </div>
+
+    <div class="guide-panel">
+      <h3>Failure Analysis</h3>
+      <p>
+        Failure events are grouped by category
+        (<code>Deduce Failed</code>, <code>Depth Exceeded</code>,
+        <code>Loop Avoided</code>, <code>Time Limit</code>).
+        Within each category, identical goals are merged with a count.
+      </p>
+      <table class="guide-table">
+        <tr>
+          <th><span class="swatch" style="background:var(--fail)"></span> Number badge</th>
+          <td>How many times this exact goal failed in this category</td>
+        </tr>
+        <tr>
+          <th>d=N</th>
+          <td>The recursion depth at which the failure occurred</td>
+        </tr>
+        <tr>
+          <th>Goal text</th>
+          <td>The failed goal in DTT form (context ⊢ target type)</td>
+        </tr>
+      </table>
+      <p>
+        High counts on a single goal indicate that the prover repeatedly
+        hits the same dead end — a strong signal for where a learned
+        ranker could prune.
+      </p>
+    </div>
+  </section>
+
+  <section>
     <h2>Run It Yourself</h2>
     <p class="lead">
       A pre-built Docker image bundles the compiled
@@ -416,21 +583,17 @@ docker run -p 3000:3000 lilkohapizza/wani-viz-demo
   <section>
     <h2>Resources</h2>
     <div class="link-grid">
-      <a class="link-card" href="#" target="_blank" rel="noopener">
-        <div class="lk-title">Paper (PDF)</div>
-        <div class="lk-desc">NALOMA 2026 archival demo submission &mdash; anonymized for double-blind review.</div>
-      </a>
-      <a class="link-card" href="#" target="_blank" rel="noopener">
-        <div class="lk-title">Source code</div>
-        <div class="lk-desc">Anonymous mirror via 4open.science.</div>
-      </a>
       <a class="link-card" href="https://wani-viz-demo.fly.dev/searchlog" target="_blank" rel="noopener">
         <div class="lk-title">Live demo</div>
-        <div class="lk-desc">The hosted dashboard above &mdash; full-screen.</div>
+        <div class="lk-desc">The hosted dashboard, full-screen on Fly.io.</div>
       </a>
-      <a class="link-card" href="#" target="_blank" rel="noopener">
+      <a class="link-card" href="https://hub.docker.com/r/lilkohapizza/wani-viz-demo" target="_blank" rel="noopener">
         <div class="lk-title">Docker image</div>
-        <div class="lk-desc">Pull the pre-built image and run locally.</div>
+        <div class="lk-desc">Pre-built image on Docker Hub. <code>docker run -p 3000:3000 lilkohapizza/wani-viz-demo</code></div>
+      </a>
+      <a class="link-card" href="https://github.com/kohapizza/lightblue/tree/feature/wani-search-log-viz" target="_blank" rel="noopener">
+        <div class="lk-title">Source code</div>
+        <div class="lk-desc">The visualisation feature lives on the <code>feature/wani-search-log-viz</code> branch of the <em>lightblue</em> fork.</div>
       </a>
     </div>
   </section>
